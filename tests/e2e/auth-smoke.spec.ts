@@ -18,7 +18,14 @@ test("validação do formulário acontece antes de enviar", async ({ page }) => 
   await expect(page.getByText("Informe sua senha.")).toBeVisible();
 });
 
-for (const path of ["/admin", "/painel/barbearia-a", "/profissional/barbearia-a", "/inicio"]) {
+for (const path of [
+  "/admin",
+  "/admin/estabelecimentos",
+  "/admin/estabelecimentos/novo",
+  "/painel/barbearia-a",
+  "/profissional/barbearia-a",
+  "/inicio",
+]) {
   test(`área privada ${path} exige login e preserva o destino`, async ({ page }) => {
     await page.goto(path);
     await expect(page).toHaveURL(new RegExp(`/login\\?next=${encodeURIComponent(path)}`));

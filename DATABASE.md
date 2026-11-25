@@ -701,7 +701,7 @@ Em políticas, usar `(select private.is_member(establishment_id))` para que o pl
 
 | RPC | Quem | Descrição |
 |---|---|---|
-| `create_establishment(payload)` | Super Admin | Cria estabelecimento + settings padrão + convite do responsável; audita |
+| `create_establishment(payload)` | Super Admin | Cria o estabelecimento e as configurações padrão, registra o autor e audita a criação. O convite do responsável entra no fluxo E2-5. |
 | `update_establishment_status(id, status, reason)` | Super Admin | Ativar/suspender/desativar; audita |
 | `create_invitation(est_id, email, role, professional_id?)` | Super Admin, owner/admin (admin não convida owner) | Retorna o token **uma única vez** |
 | `revoke_invitation(id)` | idem | |

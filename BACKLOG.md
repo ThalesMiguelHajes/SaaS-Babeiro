@@ -44,9 +44,9 @@ Notas da Fase 1:
 
 | ID | Tarefa | Pri. | Dep. | Dono | Critérios de aceitação | Status |
 |---|---|:-:|---|---|---|:-:|
-| E2-1 | RPC `create_establishment` + settings padrão + auditoria | P0 | E1-* | 01 | Somente PA; slug validado (formato, reservado, único) | ⬜ |
-| E2-2 | Lista de estabelecimentos (busca, filtro por status, paginação) | P0 | E2-1 | 04 | Tabela conforme referência visual do admin | ⬜ |
-| E2-3 | Formulário de criação/edição (dados, endereço, fuso, contatos) | P0 | E2-1 | 04 | Zod; telefone E.164; fuso válido | ⬜ |
+| E2-1 | RPC `create_establishment` + settings padrão + auditoria | P0 | E1-* | 01 | Somente PA; slug validado (formato, reservado, único) | ✅ |
+| E2-2 | Lista de estabelecimentos (busca, filtro por status, paginação) | P0 | E2-1 | 04 | Tabela conforme referência visual do admin | ✅ |
+| E2-3 | Formulário de criação/edição (dados, endereço, fuso, contatos) | P0 | E2-1 | 04 | Zod; telefone E.164; fuso válido | 🟨 Cadastro entregue; edição pendente |
 | E2-4 | Upload de logo e capa (Storage + políticas) | P1 | E2-3 | 04/01 | Apenas JPEG/PNG/WebP ≤ 5 MB; caminho por estabelecimento | ⬜ |
 | E2-5 | Convites: `create_invitation`, `revoke_invitation`, **link copiável** + botão "Enviar pelo WhatsApp" (`wa.me`) | P0 | E2-1 | 03 | Token mostrado uma vez; hash no banco; expira em 7 dias; sem dependência de SMTP | ⬜ |
 | E2-5b | Gerar link de redefinição de senha para copiar (Super Admin) | P1 | E2-5 | 03 | Auditado | ⬜ |
