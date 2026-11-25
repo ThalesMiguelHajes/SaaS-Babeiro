@@ -1,8 +1,10 @@
 import { StoreIcon } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePlatformAdmin } from "@/lib/authz";
 import { createClient } from "@/lib/supabase/server";
@@ -25,6 +27,10 @@ export default async function AdminHomePage() {
       .eq("status", "suspended"),
   ]);
 
+  if (total.error || active.error || suspended.error) {
+    throw new Error("Não foi possível consultar os estabelecimentos.");
+  }
+
   const stats = [
     { label: "Estabelecimentos", value: total.count ?? 0 },
     { label: "Ativos", value: active.count ?? 0 },
@@ -44,11 +50,15 @@ export default async function AdminHomePage() {
           </Card>
         ))}
       </div>
-      {(total.count ?? 0) === 0 && (
+      {total.count === 0 && (
         <EmptyState
           icon={StoreIcon}
           title="Nenhum estabelecimento cadastrado"
-          description="O cadastro de estabelecimentos chega na Fase 2."
+          action={
+            <Button asChild>
+              <Link href="/admin/estabelecimentos/novo">Cadastrar estabelecimento</Link>
+            </Button>
+          }
         />
       )}
     </>

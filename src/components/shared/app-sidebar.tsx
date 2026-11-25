@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboardIcon, ScissorsIcon, type LucideIcon } from "lucide-react";
+import { LayoutDashboardIcon, ScissorsIcon, StoreIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -20,7 +20,10 @@ import {
 
 import { UserMenu } from "./user-menu";
 
-const ICONS = { dashboard: LayoutDashboardIcon } satisfies Record<string, LucideIcon>;
+const ICONS = { dashboard: LayoutDashboardIcon, establishments: StoreIcon } satisfies Record<
+  string,
+  LucideIcon
+>;
 
 export type NavItem = { href: string; label: string; icon: keyof typeof ICONS; exact?: boolean };
 

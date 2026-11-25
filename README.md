@@ -2,7 +2,7 @@
 
 Plataforma multi-tenant para estabelecimentos de beleza gerenciarem profissionais, serviços, horários, clientes e agendamentos, com página pública de reservas por estabelecimento (`/agendar/[slug]`).
 
-> **Status:** Fase 1 (fundação) concluída — autenticação, banco núcleo com RLS, layout base e CI. Ver [PROGRESS.md](./PROGRESS.md).
+> **Status:** Fase 2 em andamento. O Super Administrador pode cadastrar e consultar estabelecimentos em `/admin/estabelecimentos`. Ver [PROGRESS.md](./PROGRESS.md).
 
 ## Documentação
 

@@ -425,6 +425,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      create_establishment: { Args: { payload: Json }; Returns: string };
       timemultirange: { Args: Record<PropertyKey, never>; Returns: unknown };
     };
     Enums: {

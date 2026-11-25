@@ -2,7 +2,7 @@
 
 > Estado atual do projeto. Atualizar ao final de cada sessão/tarefa.
 
-**Fase atual:** 1 — Fundação · **Status:** concluída. Próxima: Fase 2 — Plataforma administrativa.
+**Fase atual:** 2 — Plataforma administrativa · **Status:** em andamento.
 **Última atualização:** 2026-11-25
 
 ## Concluído
@@ -23,6 +23,12 @@
 - Utilitários testados: dinheiro em centavos, telefone E.164/BR, datas no fuso do estabelecimento, tokens (256 bits + SHA-256), mapeamento de erros de domínio.
 - Script `pnpm bootstrap:super-admin <email>` (idempotente, auditado). Seed de desenvolvimento com 2 barbearias e 6 usuários.
 - Qualidade: 54 testes pgTAP (segurança estrutural, identidade, isolamento A×B, regras de owner), 38 testes unitários, 18 E2E (desktop + mobile), lint, typecheck, build, verificação de segredos no bundle e CI no GitHub Actions.
+
+### Fase 2 — Cadastro e consulta de estabelecimentos
+
+- A base importada em `main` corresponde aos arquivos do ZIP do commit de origem `ce751377e69ac495cee2cfc75dada674b9f469e2`. O histórico Git desta cópia começa no repositório de ThalesMiguelHajes.
+- O Super Administrador acessa **Estabelecimentos** para buscar por nome, filtrar por status ou iniciar um cadastro. A criação registra a auditoria e usa o mecanismo de configurações padrão da Fase 1.
+- Cadastrar um estabelecimento e conceder acesso ao responsável são operações independentes. O aceite de convite será entregue em uma etapa posterior.
 
 ## Pendente
 
@@ -61,5 +67,5 @@
 
 ## Próximos passos
 
-1. Fase 2: RPC `create_establishment`, cadastro/listagem de estabelecimentos no `/admin`, convites por link copiável e aceite em `/convite/[token]`, ativar/suspender/desativar, auditoria.
+1. Continuar a Fase 2 com edição dos dados, convites por link copiável, aceite em `/convite/[token]`, transições de status e consulta à auditoria.
 2. Ordem geral: 1 → 2 → 3 → B1 → B2 → 4 → 5 → 6 → B3 → B4 → 7 → B5.
