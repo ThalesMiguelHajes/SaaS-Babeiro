@@ -1,0 +1,20 @@
+import "server-only";
+
+import { z } from "zod";
+
+const serverSchema = z.object({
+  SUPABASE_SECRET_KEY: z.string().min(1),
+});
+
+let cached: z.infer<typeof serverSchema> | undefined;
+
+/** Variáveis exclusivas do servidor. Lidas sob demanda para não quebrar o build sem elas. */
+export function serverEnv() {
+  if (cached) return cached;
+  const parsed = serverSchema.safeParse({ SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY });
+  if (!parsed.success) {
+    throw new Error("SUPABASE_SECRET_KEY ausente. Configure-a apenas no ambiente do servidor.");
+  }
+  cached = parsed.data;
+  return cached;
+}

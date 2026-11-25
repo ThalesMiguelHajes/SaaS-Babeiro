@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  # Valores fictícios: o build e os testes de fumaça não acessam um Supabase real.
+  NEXT_PUBLIC_APP_URL: http://localhost:3100
+  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+
+jobs:
+  app:
+    name: Lint, tipos, testes e build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Nenhum segredo no bundle do cliente
+        run: scripts/check-client-bundle.sh
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+
+  database:
+    name: Migrations, RLS e pgTAP
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Migrations + testes pgTAP + seed
+        run: scripts/db-test.sh
+      - name: Tipos gerados estão atualizados
+        run: |
+          scripts/db-types.sh --harness
+          git diff --exit-code -- src/types/database.ts || {
+            echo "::error::src/types/database.ts desatualizado. Rode 'pnpm db:types:harness' e faça commit."; exit 1; }
