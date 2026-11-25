@@ -9,7 +9,8 @@ mkdir -p "$(dirname "$OUT")"
 
 if [ "${1:-}" = "--harness" ]; then
   IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' saas-db-test)"
-  SOURCE=(--db-url "postgresql://postgres:postgres@${IP}:5432/app_test")
+  # O Postgres descartável do harness não oferece TLS.
+  SOURCE=(--db-url "postgresql://postgres:postgres@${IP}:5432/app_test?sslmode=disable")
 else
   SOURCE=(--local)
 fi
