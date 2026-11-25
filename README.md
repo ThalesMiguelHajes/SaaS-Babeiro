@@ -2,7 +2,7 @@
 
 Plataforma multi-tenant para estabelecimentos de beleza gerenciarem profissionais, serviços, horários, clientes e agendamentos, com página pública de reservas por estabelecimento (`/agendar/[slug]`).
 
-> **Status:** Fase 1 (fundação) concluída — autenticação, banco núcleo com RLS, layout base e CI. Ver [PROGRESS.md](./PROGRESS.md).
+> **Status:** Fase 2 (plataforma administrativa) concluída. Para publicar e testar online, siga o [DEPLOY.md](./DEPLOY.md). Andamento em [PROGRESS.md](./PROGRESS.md).
 
 ## Documentação
 
@@ -14,6 +14,7 @@ Plataforma multi-tenant para estabelecimentos de beleza gerenciarem profissionai
 | [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) | Identidade visual e padrões de UI |
 | [BACKLOG.md](./BACKLOG.md) | Épicos, tarefas, critérios de aceitação |
 | [BILLING.md](./BILLING.md) | Planos, assinaturas, faturas e pagamentos do SaaS |
+| [DEPLOY.md](./DEPLOY.md) | Passo a passo para publicar (Supabase + Vercel) |
 | [PROGRESS.md](./PROGRESS.md) | Estado atual e decisões |
 | [CLAUDE.md](./CLAUDE.md) | Regras para desenvolvimento assistido por IA |
 
@@ -138,7 +139,13 @@ pnpm db:test:harness
 pnpm build && pnpm test:e2e
 ```
 
-Os testes E2E atuais (fumaça de autenticação, redirecionamentos e cabeçalhos de segurança) não dependem de dados no banco. Os testes de integração com o stack completo do Supabase (`pnpm test:integration`) entram junto com as RPCs da Fase 2.
+Com o Supabase local rodando e o seed aplicado (`pnpm db:start && pnpm db:reset`), os testes de fluxo completo (cadastro, convites, suspensão, upload, isolamento) também rodam:
+
+```bash
+E2E_DB=1 pnpm test:e2e
+```
+
+O CI executa as três camadas: harness de banco, `supabase test db` + E2E com o Supabase local, e lint/tipos/unitários/build.
 
 Atalho para tudo (lint, tipos, unitários e banco):
 
@@ -147,6 +154,8 @@ pnpm check
 ```
 
 ## Deploy na Vercel
+
+**Passo a passo completo e simplificado: [DEPLOY.md](./DEPLOY.md).** Resumo técnico:
 
 Fase atual (demonstração/vendas): **Vercel Hobby + Supabase Free**. Ao fechar o primeiro cliente pagante, migrar para Vercel Pro e Supabase Pro.
 

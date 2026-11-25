@@ -46,6 +46,15 @@ async function main() {
     return;
   }
 
+  // Garante o profile (contas criadas antes das migrations não têm).
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .upsert(
+      { id: userId, full_name: email.split("@")[0] ?? "Usuário", email },
+      { onConflict: "id", ignoreDuplicates: true },
+    );
+  if (profileError) throw profileError;
+
   const { error: insertError } = await supabase.from("platform_admins").insert({ user_id: userId });
   if (insertError) throw insertError;
 

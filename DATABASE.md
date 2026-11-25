@@ -358,6 +358,8 @@ Regras: se houver `closed` para a data, não pode haver `custom_hours` na mesma 
 ### 5.14. `professional_working_hours`
 Igual a 5.12 com `professional_id` (FK composta) + `establishment_id`. EXCLUDE por `(professional_id, weekday, timerange)`.
 
+**D23:** profissional **sem nenhuma linha** segue o horário do estabelecimento. Com ao menos uma linha, vale a jornada própria (dia sem linha = folga).
+
 ### 5.15. `professional_date_overrides`
 Igual a 5.13 com `professional_id`; `kind`: `closed` (folga no dia) ou `custom_hours` (jornada excepcional).
 
@@ -798,6 +800,8 @@ Observações:
 
 Bucket `establishment-assets` (**leitura pública**, pois logos/capas/fotos aparecem na página pública; sem listagem pública).
 
+> **Implementado na Fase 2 de forma mais restrita:** não há políticas de escrita em `storage.objects` para usuários da API. O upload passa por Server Action (valida permissão, tipo real do arquivo e tamanho), grava com a chave secreta e registra o caminho pela RPC `set_establishment_image`, que confere a permissão no banco e exige que o caminho esteja na pasta do próprio estabelecimento. As regras abaixo ficam como referência caso uploads diretos do navegador sejam necessários no futuro.
+
 - Caminhos: `{establishment_id}/logo/{uuid}.webp`, `{establishment_id}/cover/{uuid}.webp`, `{establishment_id}/professionals/{professional_id}/{uuid}.webp`.
 - INSERT/UPDATE/DELETE em `storage.objects`: `A(e)` onde `e = (storage.foldername(name))[1]::uuid`; staff apenas no próprio caminho de profissional; PA em qualquer.
 - Limites no bucket: 5 MB, MIME `image/jpeg`, `image/png`, `image/webp`. Redimensionamento/conversão no servidor antes do upload quando viável.
@@ -808,6 +812,7 @@ Bucket `establishment-assets` (**leitura pública**, pois logos/capas/fotos apar
 ## 14. Migrations, seed e tipos
 
 - Migrations criadas com `supabase migration new <nome>` e numeradas por timestamp.
+- **Implementadas (Fase 2):** `20261126120000_platform_rpcs` (profiles.email; RPCs `create_establishment`, `update_establishment`, `set_establishment_status`, `set_establishment_image`, `create_invitation`, `revoke_invitation`, `get_invitation_by_token` [service_role], `accept_invitation`), `20261126120100_storage_establishment_assets` (bucket público, sem políticas de escrita — uploads só pelo servidor).
 - **Implementadas (Fase 1):** `20261125140000_extensions_schemas_types`, `20261125140100_core_identity` (profiles, platform_admins, platform_settings, **audit_logs** — antecipado porque o bootstrap e as RPCs da Fase 2 auditam), `20261125140200_establishments` (establishments, settings, members, invitations, auxiliares de tenant e RLS). A coluna `establishment_invitations.professional_id` entra com a migration do catálogo.
 - Ordem planejada original (referência):
   1. `extensions_schemas_types`

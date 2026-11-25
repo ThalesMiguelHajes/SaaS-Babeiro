@@ -2,8 +2,13 @@
 begin;
 select plan(3);
 
+set client_min_messages = warning;
+-- Isola o teste dos dados do seed (tudo é desfeito no rollback final).
+truncate public.establishments, public.platform_admins, public.audit_logs cascade;
+delete from auth.users;
+
 create function pg_temp.new_user(p_email text) returns uuid language sql as $$
-  insert into auth.users (email) values (p_email) returning id
+  insert into auth.users (id, email) values (gen_random_uuid(), p_email) returning id
 $$;
 
 select pg_temp.new_user('dono@teste.dev') as owner \gset

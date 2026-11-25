@@ -2,8 +2,8 @@ import { AppShell } from "@/components/shared/app-shell";
 import { EstablishmentStatusBanner } from "@/components/shared/establishment-status-banner";
 import { requireMembership } from "@/lib/authz";
 
-// Até a Fase 3 (tabela professionals), a área exige apenas vínculo ativo com o estabelecimento.
-// Depois passa a usar requireProfessional(slug) — ver BACKLOG E3-4.
+// A área do profissional exige vínculo ativo; páginas que dependem do perfil profissional
+// (agenda, perfil) usam requireProfessional(slug).
 export default async function ProfessionalLayout({
   children,
   params,
@@ -17,7 +17,12 @@ export default async function ProfessionalLayout({
       title={establishment.name}
       subtitle="Área do profissional"
       groupLabel="Minha área"
-      items={[{ href: base, label: "Minha agenda", icon: "dashboard", exact: true }]}
+      items={[
+        { href: base, label: "Minha agenda", icon: "agenda", exact: true },
+        { href: `${base}/resumo`, label: "Meu resumo", icon: "dashboard" },
+        { href: `${base}/disponibilidade`, label: "Disponibilidade", icon: "hours" },
+        { href: `${base}/perfil`, label: "Meu perfil", icon: "professionals" },
+      ]}
       user={{ name: user.fullName, email: user.email }}
       banner={<EstablishmentStatusBanner status={establishment.status} />}
     >

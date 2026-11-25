@@ -17,7 +17,7 @@ const eslintConfig = defineConfig([
             {
               name: "@/lib/supabase/admin",
               message:
-                "Cliente com chave secreta: permitido apenas em modules/**/actions.ts, modules/booking/** e scripts/.",
+                "Cliente com chave secreta: permitido apenas em modules/**/actions.ts, modules/**/*.server.ts, modules/booking/** e scripts/.",
             },
           ],
         },
@@ -27,6 +27,7 @@ const eslintConfig = defineConfig([
   {
     files: [
       "src/modules/**/actions.ts",
+      "src/modules/**/*.server.ts",
       "src/modules/booking/**",
       "scripts/**",
       "src/lib/supabase/admin.ts",

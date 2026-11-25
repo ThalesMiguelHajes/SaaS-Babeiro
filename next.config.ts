@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
   // dinâmicas por usuário e a leitura de sessão exigiria <Suspense> em toda a árvore.
   cacheComponents: false,
   poweredByHeader: false,
+  experimental: {
+    // Upload de logo/capa (até 5 MB, validado na action) passa por Server Action.
+    serverActions: { bodySizeLimit: "6mb" },
+  },
   turbopack: {
     rules: {
       "*.css": {
@@ -26,7 +30,24 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Links com token privado: não vazar a URL por Referer nem indexar.
+      {
+        source: "/convite/:path*",
+        headers: [
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
+        source: "/reserva/:path*",
+        headers: [
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+    ];
   },
 };
 

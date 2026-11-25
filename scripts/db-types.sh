@@ -9,7 +9,7 @@ mkdir -p "$(dirname "$OUT")"
 
 if [ "${1:-}" = "--harness" ]; then
   IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' saas-db-test)"
-  SOURCE=(--db-url "postgresql://postgres:postgres@${IP}:5432/app_test")
+  SOURCE=(--db-url "postgresql://postgres:postgres@${IP}:5432/app_test?sslmode=disable")
 else
   SOURCE=(--local)
 fi
@@ -18,7 +18,9 @@ TMP="$(mktemp)"
 pnpm exec supabase gen types typescript "${SOURCE[@]}" --schema public > "$TMP" 2>/dev/null
 {
   echo "// ARQUIVO GERADO por scripts/db-types.sh — não editar manualmente."
-  cat "$TMP"
+  # Algumas versões da CLI escrevem avisos (ex.: conexão sem TLS) no stdout antes do código:
+  # descarta tudo antes da primeira declaração TypeScript.
+  sed -n '/^export /,$p' "$TMP"
 } > "$OUT"
 rm -f "$TMP"
 pnpm exec prettier --log-level warn --write "$OUT"

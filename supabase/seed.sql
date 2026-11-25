@@ -62,3 +62,20 @@ insert into public.establishment_members (establishment_id, user_id, role) value
   ('10000000-0000-4000-a000-00000000000a', '00000000-0000-4000-a000-000000000006', 'admin'),
   ('10000000-0000-4000-a000-00000000000b', '00000000-0000-4000-a000-000000000005', 'owner'),
   ('10000000-0000-4000-a000-00000000000b', '00000000-0000-4000-a000-000000000006', 'staff');
+
+-- Fase 4: horário da Barbearia A (seg–sáb, 09–12 e 13–19), um profissional e um serviço.
+insert into public.establishment_working_hours (establishment_id, weekday, start_time, end_time)
+select '10000000-0000-4000-a000-00000000000a', w, t.s, t.e
+from generate_series(1, 6) w, (values ('09:00'::time, '12:00'::time), ('13:00', '19:00')) t(s, e);
+
+insert into public.professionals (id, establishment_id, display_name, specialties, sort_order)
+values ('20000000-0000-4000-a000-00000000000a', '10000000-0000-4000-a000-00000000000a',
+        'Rafael Seed', array['Corte clássico'], 0);
+
+insert into public.services (id, establishment_id, name, price_cents, duration_minutes, buffer_after_minutes)
+values ('30000000-0000-4000-a000-00000000000a', '10000000-0000-4000-a000-00000000000a',
+        'Corte clássico', 4500, 30, 0);
+
+insert into public.professional_services (establishment_id, professional_id, service_id)
+values ('10000000-0000-4000-a000-00000000000a', '20000000-0000-4000-a000-00000000000a',
+        '30000000-0000-4000-a000-00000000000a');

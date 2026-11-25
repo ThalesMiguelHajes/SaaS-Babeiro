@@ -3,10 +3,15 @@
 begin;
 select plan(30);
 
+set client_min_messages = warning;
+-- Isola o teste dos dados do seed (tudo é desfeito no rollback final).
+truncate public.establishments, public.platform_admins, public.audit_logs cascade;
+delete from auth.users;
+
 -- Auxiliares ------------------------------------------------------------------
 create function pg_temp.new_user(p_email text) returns uuid language sql as $$
-  insert into auth.users (email, raw_user_meta_data)
-  values (p_email, jsonb_build_object('full_name', initcap(split_part(p_email, '@', 1))))
+  insert into auth.users (id, email, raw_user_meta_data)
+  values (gen_random_uuid(), p_email, jsonb_build_object('full_name', initcap(split_part(p_email, '@', 1))))
   returning id
 $$;
 create function pg_temp.login_as(p_user uuid) returns void language plpgsql as $$

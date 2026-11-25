@@ -6,6 +6,7 @@ import { messageFor } from "@/lib/errors";
 import { publicEnv } from "@/lib/env";
 import { fail, ok, type Result } from "@/lib/result";
 import { createClient } from "@/lib/supabase/server";
+import { validationFailure } from "@/lib/validation";
 
 import { safeNextPath } from "./rules";
 import {
@@ -17,19 +18,10 @@ import {
   type ResetPasswordInput,
 } from "./schemas";
 
-function fieldErrorsOf(error: { issues: { path: PropertyKey[]; message: string }[] }) {
-  const out: Record<string, string[]> = {};
-  for (const issue of error.issues) {
-    const key = String(issue.path[0] ?? "form");
-    (out[key] ??= []).push(issue.message);
-  }
-  return out;
-}
-
 export async function signIn(input: LoginInput): Promise<Result<never>> {
   const parsed = loginSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("VALIDATION_ERROR", messageFor("VALIDATION_ERROR"), fieldErrorsOf(parsed.error));
+    return validationFailure(parsed.error);
   }
 
   const supabase = await createClient();
@@ -56,7 +48,7 @@ export async function signOut(): Promise<void> {
 export async function requestPasswordReset(input: RecoverPasswordInput): Promise<Result<null>> {
   const parsed = recoverPasswordSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("VALIDATION_ERROR", messageFor("VALIDATION_ERROR"), fieldErrorsOf(parsed.error));
+    return validationFailure(parsed.error);
   }
 
   const supabase = await createClient();
@@ -75,7 +67,7 @@ export async function requestPasswordReset(input: RecoverPasswordInput): Promise
 export async function updatePassword(input: ResetPasswordInput): Promise<Result<never>> {
   const parsed = resetPasswordSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("VALIDATION_ERROR", messageFor("VALIDATION_ERROR"), fieldErrorsOf(parsed.error));
+    return validationFailure(parsed.error);
   }
 
   const supabase = await createClient();

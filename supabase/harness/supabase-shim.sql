@@ -78,9 +78,7 @@ $$;
 
 grant execute on function auth.jwt(), auth.uid(), auth.role() to anon, authenticated, service_role;
 
--- Privilégios padrão equivalentes aos do Supabase: a API recebe grants amplos e
--- o RLS é a barreira real. Assim os testes reproduzem o cenário de produção.
-grant usage on schema public to anon, authenticated, service_role;
-alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
-alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+-- Cenário MAIS RESTRITO dos projetos Supabase novos: tabelas novas NÃO recebem grants
+-- automáticos para os papéis da API (as migrations precisam concedê-los explicitamente).
+-- Funções continuam executáveis por PUBLIC (padrão do Postgres) — por isso as RPCs revogam.
 alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;

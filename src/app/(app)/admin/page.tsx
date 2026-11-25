@@ -1,56 +1,60 @@
-import { StoreIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
-import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePlatformAdmin } from "@/lib/authz";
-import { createClient } from "@/lib/supabase/server";
+import { AuditTable } from "@/modules/audit/components/audit-table";
+import { listAuditLogs } from "@/modules/audit/queries";
+import { getPlatformStats } from "@/modules/platform/queries";
 
 export const metadata: Metadata = { title: "Visão geral" };
 
 export default async function AdminHomePage() {
   await requirePlatformAdmin();
-  const supabase = await createClient();
+  const [stats, recent] = await Promise.all([getPlatformStats(), listAuditLogs({ pageSize: 8 })]);
 
-  const [total, active, suspended] = await Promise.all([
-    supabase.from("establishments").select("id", { count: "exact", head: true }),
-    supabase
-      .from("establishments")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "active"),
-    supabase
-      .from("establishments")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "suspended"),
-  ]);
-
-  const stats = [
-    { label: "Estabelecimentos", value: total.count ?? 0 },
-    { label: "Ativos", value: active.count ?? 0 },
-    { label: "Suspensos", value: suspended.count ?? 0 },
+  const cards = [
+    { label: "Estabelecimentos", value: stats.total },
+    { label: "Ativos", value: stats.active },
+    { label: "Suspensos", value: stats.suspended },
+    { label: "Novos (30 dias)", value: stats.newLast30 },
   ];
 
   return (
     <>
-      <PageHeader title="Visão geral" description="Situação dos estabelecimentos da plataforma." />
-      <div className="grid gap-4 sm:grid-cols-3">
-        {stats.map((s) => (
-          <Card key={s.label}>
+      <PageHeader
+        title="Visão geral"
+        description="Situação da plataforma."
+        actions={
+          <Button asChild>
+            <Link href="/admin/estabelecimentos/novo">
+              <PlusIcon aria-hidden /> Novo estabelecimento
+            </Link>
+          </Button>
+        }
+      />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {cards.map((c) => (
+          <Card key={c.label}>
             <CardHeader>
-              <CardDescription>{s.label}</CardDescription>
-              <CardTitle className="text-3xl tabular-nums">{s.value}</CardTitle>
+              <CardDescription>{c.label}</CardDescription>
+              <CardTitle className="text-3xl tabular-nums">{c.value}</CardTitle>
             </CardHeader>
           </Card>
         ))}
       </div>
-      {(total.count ?? 0) === 0 && (
-        <EmptyState
-          icon={StoreIcon}
-          title="Nenhum estabelecimento cadastrado"
-          description="O cadastro de estabelecimentos chega na Fase 2."
-        />
-      )}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">Atividade recente</h2>
+          <Button variant="link" asChild className="px-0">
+            <Link href="/admin/auditoria">Ver tudo</Link>
+          </Button>
+        </div>
+        <AuditTable rows={recent.rows} />
+      </section>
     </>
   );
 }

@@ -64,7 +64,15 @@ Regra de dependência: `app → modules → lib`. Um módulo pode importar `sche
 - **Next.js 16**: leia `node_modules/next/dist/docs/` antes de usar APIs que você não conhece desta versão (ver `AGENTS.md`). `middleware` agora é `src/proxy.ts`; `cacheComponents` está desligado (D22).
 - **Triggers de guarda** que usam `private.is_privileged_context()` precisam ser `SECURITY INVOKER` (em `SECURITY DEFINER`, `current_user` vira o owner e a guarda nunca dispara).
 - Cada migration termina com `revoke execute on all functions in schema private from public, anon;` seguido de grants explícitos. O teste `000_schema_security.sql` falha se isso for esquecido.
+- **Grants explícitos em toda tabela nova** (`grant select ... to authenticated`, `service_role` com acesso completo): projetos Supabase novos não concedem privilégios automáticos às tabelas. O harness reproduz esse cenário restrito; o Supabase local não.
 - Nunca `select *` em tabelas com colunas sem grant (ex.: `establishment_invitations.token_hash`).
+- Leituras privilegiadas (chave secreta) fora de actions ficam em arquivos `*.server.ts` do módulo (ex.: `members/invitations.server.ts`), sempre com `import "server-only"`.
+- Testes pgTAP começam isolando os dados do seed (`truncate ... cascade; delete from auth.users;` dentro da transação) e inserem `auth.users` com `id` explícito (o Auth real não tem default).
+- O harness fica em `supabase/harness/` — **nunca** dentro de `supabase/tests/` (o `supabase test db` executa tudo que está lá).
+- Testes pgTAP que chamam uma função que **insere** e depois leem o resultado na mesma instrução não enxergam a linha (snapshot): guarde o id com `\gset` e consulte em outra instrução. Dentro de RPCs, use variável intermediária (ver `create_appointment`).
+- O Supabase recusa `UPDATE`/`DELETE` sem `WHERE` (pg-safeupdate) nas chamadas pela API — inclusive dentro de RPCs. Tabelas de linha única: `where id`. O harness não reproduz isso; cubra com E2E.
+- `appointment_events` é append-only: agendamentos não são apagáveis (o cascade dispara o bloqueio). Limpeza em testes = cancelar/arquivar.
+- Server Actions que recebem `FormData` com arquivos: validar o tipo real pelo conteúdo (magic bytes), não pela extensão.
 
 - TypeScript strict, sem `any` (usar `unknown` + validação). `noUncheckedIndexedAccess` ativo.
 - Server Components por padrão; `'use client'` só para interatividade (formulários, agenda, seletor de horários).
@@ -92,7 +100,8 @@ pnpm db:test:harness   # migrations + pgTAP + seed em Postgres 17 (Docker) — u
 pnpm db:types:harness  # gera tipos a partir do harness
 pnpm lint && pnpm typecheck
 pnpm test              # Vitest (unit)
-pnpm test:e2e          # Playwright (requer pnpm build)
+pnpm test:e2e          # Playwright (requer pnpm build); E2E_DB=1 inclui os fluxos com Supabase local
+INTEGRATION_DB=1 pnpm test:integration  # concorrência de reservas contra o Supabase local
 pnpm check             # lint + tipos + unit + banco
 ```
 

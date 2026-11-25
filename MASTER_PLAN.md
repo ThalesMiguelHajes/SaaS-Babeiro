@@ -1,7 +1,7 @@
 # MASTER_PLAN — Plataforma SaaS de Agendamento para Barbearias e Salões
 
 > Documento mestre do projeto. Fonte de verdade para escopo, arquitetura e fases.
-> Status atual: **Fase 1 — Fundação concluída** (ver [PROGRESS.md](./PROGRESS.md)). Próxima: Fase 2.
+> Status atual: **Fase 2 — Plataforma administrativa concluída** (ver [PROGRESS.md](./PROGRESS.md)). Publicação: [DEPLOY.md](./DEPLOY.md). Próxima: Fase 3.
 > Última atualização: 2026-11-25.
 
 Documentos relacionados: [CLAUDE.md](./CLAUDE.md) · [BILLING.md](./BILLING.md) · [DATABASE.md](./DATABASE.md) · [SECURITY.md](./SECURITY.md) · [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) · [BACKLOG.md](./BACKLOG.md) · [PROGRESS.md](./PROGRESS.md) · [README.md](./README.md)

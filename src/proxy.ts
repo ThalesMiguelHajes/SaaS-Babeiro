@@ -12,12 +12,14 @@ function buildCsp(nonce: string) {
 
   return [
     "default-src 'self'",
+    // 'strict-dynamic': o script do Turnstile é inserido por um script já autorizado (nonce).
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
     // Componentes Radix posicionam popovers com atributos style inline.
     "style-src 'self' 'unsafe-inline'",
     `img-src 'self' blob: data: ${supabase.origin}`,
     "font-src 'self'",
-    `connect-src 'self' ${supabase.origin} ${supabaseWs}`,
+    `connect-src 'self' ${supabase.origin} ${supabaseWs} https://challenges.cloudflare.com`,
+    "frame-src https://challenges.cloudflare.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

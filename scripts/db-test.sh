@@ -18,7 +18,7 @@ FILTER="${1:-}"
 
 if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
   echo "› Construindo imagem $IMAGE"
-  docker build -q -t "$IMAGE" "$ROOT/supabase/tests/harness" >/dev/null
+  docker build -q -t "$IMAGE" "$ROOT/supabase/harness" >/dev/null
 fi
 
 if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
@@ -39,7 +39,7 @@ psql_exec() { docker exec -i "$CONTAINER" psql -v ON_ERROR_STOP=1 -q -U postgres
 
 echo "› Recriando banco $DB"
 psql_exec -d postgres -c "drop database if exists $DB with (force);" -c "create database $DB;"
-psql_exec -d "$DB" -f /workspace/supabase/tests/harness/supabase-shim.sql >/dev/null
+psql_exec -d "$DB" -f /workspace/supabase/harness/supabase-shim.sql >/dev/null
 # Igual ao Supabase: extensões no schema extensions, que está no search_path.
 psql_exec -d "$DB" -c "create extension if not exists pgtap with schema extensions;" \
   -c "alter database $DB set search_path = \"\$user\", public, extensions;" >/dev/null

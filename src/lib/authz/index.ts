@@ -8,12 +8,25 @@ import type { Database } from "@/types/database";
 
 type MemberRole = Database["public"]["Enums"]["member_role"];
 type EstablishmentStatus = Database["public"]["Enums"]["establishment_status"];
+type PlatformRole = Database["public"]["Enums"]["platform_role"];
 
 export type CurrentUser = { id: string; email: string | null; fullName: string };
+
+export type Membership = {
+  id: string;
+  slug: string;
+  name: string;
+  status: EstablishmentStatus;
+  role: MemberRole;
+  accentColor: string;
+  timezone: string;
+  professionalId: string | null;
+};
 
 export type MembershipContext = {
   user: CurrentUser;
   role: MemberRole;
+  professionalId: string | null;
   establishment: {
     id: string;
     slug: string;
@@ -24,28 +37,66 @@ export type MembershipContext = {
   };
 };
 
+type SessionContext = {
+  user: CurrentUser;
+  platformRole: PlatformRole | null;
+  memberships: Membership[];
+};
+
+type RawContext = {
+  user_id: string;
+  full_name: string | null;
+  email: string | null;
+  platform_role: PlatformRole | null;
+  memberships: {
+    establishment_id: string;
+    slug: string;
+    name: string;
+    status: EstablishmentStatus;
+    role: MemberRole;
+    accent_color: string;
+    timezone: string;
+    professional_id: string | null;
+  }[];
+};
+
 /**
- * Usuário autenticado da requisição (validado no servidor via getClaims, nunca só pelo cookie).
- * Memoizado por requisição com React.cache.
+ * Sessão da requisição: valida o token no servidor (getClaims — assinatura verificada, nunca só
+ * o cookie) e carrega perfil, papel na plataforma e vínculos em UMA chamada ao banco.
+ * Memoizado por requisição com React.cache: layouts e páginas reutilizam o mesmo resultado.
  */
-export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
+const getSessionContext = cache(async (): Promise<SessionContext | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
   const claims = data?.claims;
   if (error || !claims?.sub) return null;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", claims.sub)
-    .maybeSingle();
+  const { data: raw } = await supabase.rpc("get_session_context");
+  const ctx = raw as RawContext | null;
 
   return {
-    id: claims.sub,
-    email: typeof claims.email === "string" ? claims.email : null,
-    fullName: profile?.full_name ?? "Usuário",
+    user: {
+      id: claims.sub,
+      email: ctx?.email ?? (typeof claims.email === "string" ? claims.email : null),
+      fullName: ctx?.full_name ?? "Usuário",
+    },
+    platformRole: ctx?.platform_role ?? null,
+    memberships: (ctx?.memberships ?? []).map((m) => ({
+      id: m.establishment_id,
+      slug: m.slug,
+      name: m.name,
+      status: m.status,
+      role: m.role,
+      accentColor: m.accent_color,
+      timezone: m.timezone,
+      professionalId: m.professional_id ?? null,
+    })),
   };
 });
+
+export async function getCurrentUser(): Promise<CurrentUser | null> {
+  return (await getSessionContext())?.user ?? null;
+}
 
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
@@ -53,17 +104,9 @@ export async function requireUser(): Promise<CurrentUser> {
   return user;
 }
 
-export const isPlatformAdmin = cache(async (): Promise<boolean> => {
-  const user = await getCurrentUser();
-  if (!user) return false;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("platform_admins")
-    .select("platform_role")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  return data?.platform_role === "super_admin";
-});
+export async function isPlatformAdmin(): Promise<boolean> {
+  return (await getSessionContext())?.platformRole === "super_admin";
+}
 
 /** Exige Super Admin. Qualquer outro usuário recebe 404 (não revela a existência da área). */
 export async function requirePlatformAdmin(): Promise<CurrentUser> {
@@ -72,67 +115,62 @@ export async function requirePlatformAdmin(): Promise<CurrentUser> {
   return user;
 }
 
+/** Vínculos ativos do usuário (estabelecimentos desativados não aparecem). */
+export async function listMyMemberships(): Promise<Membership[]> {
+  return (await getSessionContext())?.memberships ?? [];
+}
+
+function toMembershipContext(user: CurrentUser, membership: Membership): MembershipContext {
+  return {
+    user,
+    role: membership.role,
+    professionalId: membership.professionalId,
+    establishment: {
+      id: membership.id,
+      slug: membership.slug,
+      name: membership.name,
+      status: membership.status,
+      accentColor: membership.accentColor,
+      timezone: membership.timezone,
+    },
+  };
+}
+
+/**
+ * Vínculo do usuário com o estabelecimento do slug, se tiver um dos papéis informados.
+ * Para Server Actions (que devolvem Result em vez de redirecionar ou dar 404).
+ */
+export async function getMembership(
+  slug: string,
+  roles: readonly MemberRole[] = ["owner", "admin", "staff"],
+): Promise<MembershipContext | null> {
+  const ctx = await getSessionContext();
+  if (!ctx) return null;
+  const membership = ctx.memberships.find((m) => m.slug === slug.toLowerCase());
+  if (!membership || !roles.includes(membership.role)) return null;
+  return toMembershipContext(ctx.user, membership);
+}
+
 /**
  * Exige vínculo ativo com o estabelecimento do slug e um dos papéis informados.
- * O slug não é autorização: a consulta passa pelo RLS e o vínculo é conferido aqui.
+ * O slug não é autorização: o vínculo vem do banco (RLS) e é conferido aqui;
+ * as consultas e RPCs da página continuam protegidas pelo RLS.
  */
-export const requireMembership = cache(
-  async (
-    slug: string,
-    roles: readonly MemberRole[] = ["owner", "admin", "staff"],
-  ): Promise<MembershipContext> => {
-    const user = await requireUser();
-    const supabase = await createClient();
+export async function requireMembership(
+  slug: string,
+  roles: readonly MemberRole[] = ["owner", "admin", "staff"],
+): Promise<MembershipContext> {
+  if (!(await getSessionContext())) redirect("/login");
+  const membership = await getMembership(slug, roles);
+  if (!membership) notFound();
+  return membership;
+}
 
-    const { data: establishment } = await supabase
-      .from("establishments")
-      .select("id, slug, name, status, accent_color, timezone")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (!establishment) notFound();
-
-    const { data: membership } = await supabase
-      .from("establishment_members")
-      .select("role")
-      .eq("establishment_id", establishment.id)
-      .eq("user_id", user.id)
-      .eq("is_active", true)
-      .maybeSingle();
-    if (!membership || !roles.includes(membership.role)) notFound();
-
-    return {
-      user,
-      role: membership.role,
-      establishment: {
-        id: establishment.id,
-        slug: establishment.slug,
-        name: establishment.name,
-        status: establishment.status,
-        accentColor: establishment.accent_color,
-        timezone: establishment.timezone,
-      },
-    };
-  },
-);
-
-/** Vínculos ativos do usuário (para o redirecionamento pós-login e o seletor). */
-export const listMyMemberships = cache(async () => {
-  const user = await getCurrentUser();
-  if (!user) return [];
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("establishment_members")
-    .select("role, establishments!inner(id, slug, name, status)")
-    .eq("user_id", user.id)
-    .eq("is_active", true)
-    .neq("establishments.status", "deactivated")
-    .order("created_at", { ascending: true });
-
-  return (data ?? []).map((row) => ({
-    role: row.role,
-    id: row.establishments.id,
-    slug: row.establishments.slug,
-    name: row.establishments.name,
-    status: row.establishments.status,
-  }));
-});
+/** Exige que o usuário tenha um perfil profissional ativo vinculado no estabelecimento. */
+export async function requireProfessional(
+  slug: string,
+): Promise<MembershipContext & { professionalId: string }> {
+  const membership = await requireMembership(slug);
+  if (!membership.professionalId) notFound();
+  return { ...membership, professionalId: membership.professionalId };
+}

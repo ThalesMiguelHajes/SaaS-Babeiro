@@ -25,9 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -47,9 +47,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -61,3 +61,39 @@ jobs:
           scripts/db-types.sh --harness
           git diff --exit-code -- src/types/database.ts || {
             echo "::error::src/types/database.ts desatualizado. Rode 'pnpm db:types:harness' e faça commit."; exit 1; }
+
+  e2e-db:
+    name: E2E com Supabase local
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_APP_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Subir Supabase local (migrations + seed)
+        run: pnpm exec supabase start -x studio,realtime,edge-runtime,logflare,vector,imgproxy,postgres-meta,supavisor
+      - name: pgTAP no Supabase real
+        run: pnpm exec supabase test db
+      - name: Variáveis do Supabase local
+        run: |
+          pnpm exec supabase status -o env \
+            --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+            --override-name auth.publishable_key=NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY \
+            --override-name auth.secret_key=SUPABASE_SECRET_KEY \
+            | grep -E '^(NEXT_PUBLIC_SUPABASE_URL|NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY|SUPABASE_SECRET_KEY)=' \
+            | sed -E 's/="(.*)"$/=\1/' >> "$GITHUB_ENV"
+      - name: Concorrência de reservas (integração)
+        run: pnpm test:integration
+        env:
+          INTEGRATION_DB: "1"
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+        env:
+          E2E_DB: "1"

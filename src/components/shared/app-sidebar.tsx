@@ -1,7 +1,22 @@
 "use client";
 
-import { LayoutDashboardIcon, ScissorsIcon, type LucideIcon } from "lucide-react";
-import Link from "next/link";
+import {
+  CalendarDaysIcon,
+  ClockIcon,
+  ContactRoundIcon,
+  GlobeIcon,
+  HistoryIcon,
+  LayoutDashboardIcon,
+  ScissorsIcon,
+  Settings2Icon,
+  StoreIcon,
+  UserRoundIcon,
+  UsersIcon,
+  WalletIcon,
+  Loader2Icon,
+  type LucideIcon,
+} from "lucide-react";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 
 import {
@@ -20,7 +35,20 @@ import {
 
 import { UserMenu } from "./user-menu";
 
-const ICONS = { dashboard: LayoutDashboardIcon } satisfies Record<string, LucideIcon>;
+const ICONS = {
+  dashboard: LayoutDashboardIcon,
+  establishments: StoreIcon,
+  users: UsersIcon,
+  audit: HistoryIcon,
+  team: ContactRoundIcon,
+  professionals: UserRoundIcon,
+  services: ScissorsIcon,
+  publicPage: GlobeIcon,
+  settings: Settings2Icon,
+  hours: ClockIcon,
+  agenda: CalendarDaysIcon,
+  billing: WalletIcon,
+} satisfies Record<string, LucideIcon>;
 
 export type NavItem = { href: string; label: string; icon: keyof typeof ICONS; exact?: boolean };
 
@@ -78,6 +106,7 @@ export function AppSidebar({
                       <Link href={item.href} aria-current={active ? "page" : undefined}>
                         <Icon aria-hidden />
                         <span>{item.label}</span>
+                        <LinkPendingIndicator />
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -97,4 +126,11 @@ export function AppSidebar({
       <SidebarRail />
     </Sidebar>
   );
+}
+
+/** Spinner discreto no item clicado enquanto a página carrega. */
+function LinkPendingIndicator() {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return <Loader2Icon className="ml-auto size-3.5 animate-spin opacity-70" aria-hidden />;
 }

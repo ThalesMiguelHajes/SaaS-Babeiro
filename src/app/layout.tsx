@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
+import { Suspense } from "react";
 
+import { NavigationProgress } from "@/components/shared/navigation-progress";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -31,6 +33,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <ThemeProvider nonce={nonce}>
+          <Suspense fallback={null}>
+            <NavigationProgress />
+          </Suspense>
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster richColors closeButton position="top-right" />
         </ThemeProvider>
