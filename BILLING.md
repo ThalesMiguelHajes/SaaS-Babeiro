@@ -675,6 +675,16 @@ Os valores serão levantados nas páginas oficiais no momento da decisão, porqu
 7. A página de "sucesso" após o checkout **nunca** confirma pagamento. Ela só mostra "aguardando confirmação".
 8. As credenciais ficam apenas em variáveis de servidor (`PAYMENT_PROVIDER_API_KEY`, `PAYMENT_PROVIDER_WEBHOOK_SECRET`).
 
+### 19.4. Asaas Sandbox por fatura
+
+Gateway aprovado para testar Pix por fatura com baixa automática. A fatura interna continua responsável pelo vencimento e pelo saldo. O Asaas gera o QR Code e notifica o recebimento. O servidor confere a cobrança via API e a RPC lança o pagamento e recalcula a fatura em uma transação. O ID da cobrança deduplica o lançamento mesmo se a notificação for repetida.
+
+O botão **Consultar Pix** também verifica o estado no Asaas, caso a notificação ainda não tenha chegado. A cobrança usa o saldo em aberto no momento da emissão. Se o saldo mudar, o painel deixa de mostrar aquele QR Code. Se um Pix já encaminhado chegar depois de um pagamento manual, eventual excedente fica como saldo a alocar.
+
+Uma tentativa de emissão por fatura é reservada no banco antes de chamar o Asaas. Se a resposta se perder, novas consultas procuram a cobrança pela referência da fatura. Se o Asaas rejeitou a criação e não há cobrança na conta de teste, abra uma nova fatura de teste após corrigir a configuração.
+
+A configuração fica em [DEPLOY.md](./DEPLOY.md#pix-com-asaas-sandbox). O débito recorrente (Pix Automático), estornos no gateway e a conciliação agendada permanecem como etapas posteriores.
+
 ## 20. Segurança e permissões
 
 | Ação | Super Admin | billing_manager | Owner/Admin do estab. | Staff | Cliente final |

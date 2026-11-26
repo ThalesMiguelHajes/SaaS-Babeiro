@@ -2689,6 +2689,10 @@ export type Database = {
         Returns: undefined;
       };
       billing_collections_today: { Args: Record<PropertyKey, never>; Returns: Json };
+      billing_confirm_asaas_sandbox_payment: {
+        Args: { p_amount_cents: number; p_charge_id: string; p_invoice_id: string };
+        Returns: boolean;
+      };
       billing_create_coupon: {
         Args: {
           p_code: string;
@@ -2766,6 +2770,10 @@ export type Database = {
       billing_resolve_request: {
         Args: { p_request_id: string; p_response: string; p_status: string };
         Returns: undefined;
+      };
+      billing_reserve_asaas_sandbox_charge: {
+        Args: { p_amount_cents: number; p_establishment_id: string; p_invoice_id: string };
+        Returns: boolean;
       };
       billing_reverse_payment: {
         Args: { p_payment_id: string; p_reason: string };

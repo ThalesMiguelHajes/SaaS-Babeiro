@@ -234,10 +234,10 @@ Notas de B4:
 
 | ID | Tarefa | Pri. | Dep. | Critérios de aceitação | Status |
 |---|---|:-:|---|---|:-:|
-| B5-1 | Comparativo com documentação oficial (BILLING §19.2) e recomendação | P2 | B4-* | Aprovação do usuário | ⬜ |
-| B5-2 | `PaymentProvider` + implementação do provedor aprovado | P2 | B5-1 | Capabilities reais | ⬜ |
-| B5-3 | Webhooks (assinatura, idempotência, fora de ordem, conciliação) | P2 | B5-2 | F15 | ⬜ |
-| B5-4 | Pix/checkout na área de assinatura | P2 | B5-3 | Sucesso no redirect não confirma | ⬜ |
+| B5-1 | Comparativo com documentação oficial (BILLING §19.2) e recomendação | P2 | B4-* | Aprovação do usuário | ✅ Asaas Sandbox aprovado |
+| B5-2 | `PaymentProvider` + implementação do provedor aprovado | P2 | B5-1 | Capabilities reais | 🟨 Pix no Asaas Sandbox |
+| B5-3 | Webhooks (assinatura, idempotência, fora de ordem, conciliação) | P2 | B5-2 | F15 | 🟨 Webhook e consulta por fatura. Conciliação agendada pendente |
+| B5-4 | Pix/checkout na área de assinatura | P2 | B5-3 | Sucesso no redirect não confirma | 🟨 QR Code e Copia e Cola no sandbox. Homologação com Asaas pendente |
 
 ## Pós-MVP (P2, não iniciar sem aprovação)
 
