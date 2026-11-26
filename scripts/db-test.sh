@@ -30,8 +30,10 @@ if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
     "$IMAGE" -c fsync=off -c full_page_writes=off >/dev/null
 fi
 
+# O servidor temporário do entrypoint aceita apenas o socket Unix.
+# Aguarde o servidor definitivo antes de recriar o banco de teste.
 for _ in $(seq 1 60); do
-  docker exec "$CONTAINER" pg_isready -U postgres -q && break
+  docker exec "$CONTAINER" pg_isready -h 127.0.0.1 -U postgres -q && break
   sleep 0.5
 done
 
