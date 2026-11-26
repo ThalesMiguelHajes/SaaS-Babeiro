@@ -2767,13 +2767,13 @@ export type Database = {
         };
         Returns: string;
       };
-      billing_resolve_request: {
-        Args: { p_request_id: string; p_response: string; p_status: string };
-        Returns: undefined;
-      };
       billing_reserve_asaas_sandbox_charge: {
         Args: { p_amount_cents: number; p_establishment_id: string; p_invoice_id: string };
         Returns: boolean;
+      };
+      billing_resolve_request: {
+        Args: { p_request_id: string; p_response: string; p_status: string };
+        Returns: undefined;
       };
       billing_reverse_payment: {
         Args: { p_payment_id: string; p_reason: string };
