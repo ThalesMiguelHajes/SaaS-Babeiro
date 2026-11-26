@@ -123,3 +123,11 @@ A rotina do financeiro é agendada sozinha no banco (pg_cron) quando a migration
 
 - **Vercel Hobby** não permite uso comercial: ao fechar o primeiro cliente pagante, migrar para **Pro**.
 - **Supabase Free** pausa o projeto após **7 dias sem acesso** e não tem backup diário. Para reativar: painel do Supabase → **Restore project**. Ao ter cliente pagante, migrar para **Pro**.
+
+## Pix com Asaas Sandbox
+
+1. Use a aplicação local ou uma Preview da Vercel conectada a um projeto Supabase exclusivo de teste. Aplique as migrations nesse projeto e crie um estabelecimento com uma fatura em aberto. O Pix de teste é bloqueado na implantação de produção da Vercel e no Supabase do site publicado.
+2. No Asaas Sandbox, crie um cliente fictício e obtenha seu ID `cus_...` e uma chave de API de teste.
+3. Configure `ASAAS_SANDBOX_API_KEY`, `ASAAS_SANDBOX_CUSTOMER_ID`, `ASAAS_SANDBOX_WEBHOOK_TOKEN` (segredo exclusivo com pelo menos 32 caracteres) e `ASAAS_SANDBOX_SUPABASE_URL` (mesma URL de teste que `NEXT_PUBLIC_SUPABASE_URL`).
+4. No Asaas Sandbox, configure o webhook `PAYMENT_RECEIVED` apontando para `/api/webhooks/asaas` na URL da aplicação de teste. Use `ASAAS_SANDBOX_WEBHOOK_TOKEN` como token de autenticação do webhook. A URL precisa estar acessível pelo Asaas para receber as notificações.
+5. Entre como dono ou administrador do estabelecimento de teste, abra **Assinatura → Fatura → Gerar Pix de teste** e simule o pagamento no Asaas Sandbox. Recarregue a fatura para conferir a baixa. O botão **Consultar Pix** também pode atualizar a fatura diretamente a partir do status da cobrança.

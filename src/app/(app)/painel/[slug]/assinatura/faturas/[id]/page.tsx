@@ -7,8 +7,10 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { requireMembership } from "@/lib/authz";
 import { todayInTimeZone } from "@/modules/availability/rules";
+import { AsaasSandboxPix } from "@/modules/billing/components/asaas-sandbox-pix";
 import { InvoiceDocument } from "@/modules/billing/components/invoice-document";
 import { ProofUpload } from "@/modules/billing/components/proof-upload";
+import { asaasSandboxConfig } from "@/modules/billing/providers/asaas.server";
 import { getInvoice } from "@/modules/billing/queries";
 import { effectiveInvoiceStatus, isPayable } from "@/modules/billing/rules";
 
@@ -49,6 +51,9 @@ export default async function EstablishmentInvoicePage({
       <div className="grid gap-6 lg:grid-cols-[1fr_minmax(0,360px)]">
         <InvoiceDocument invoice={invoice} today={today} />
         <div className="flex flex-col gap-4">
+          {isPayable(status) && asaasSandboxConfig() && (
+            <AsaasSandboxPix slug={establishment.slug} invoiceId={invoice.id} />
+          )}
           {isPayable(status) && <ProofUpload slug={establishment.slug} invoiceId={invoice.id} />}
           {invoice.proofs.length > 0 && (
             <ul className="flex flex-col divide-y rounded-lg border text-sm">

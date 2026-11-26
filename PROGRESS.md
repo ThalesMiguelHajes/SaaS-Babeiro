@@ -3,7 +3,7 @@
 > Estado atual do projeto. Atualizar ao final de cada sessão/tarefa.
 
 **Fase atual:** B3 — Indicadores, cupons e recorrentes · **Status:** concluída. Em andamento: B4-6 (e-mail via Resend) e B5 (gateway), autorizados pelo usuário.
-**Última atualização:** 2026-11-25
+**Última atualização:** 2026-11-26
 
 ## Concluído
 
@@ -79,7 +79,14 @@
 - Cupons (criar, ativar/desativar, aplicar na assinatura) e adicionais recorrentes (entram em todas as faturas enquanto vigentes; encerramento auditado).
 - Qualidade: 351 pgTAP (F20 incluído), 95 unitários, 5 de concorrência, 59 E2E.
 
+### B5 — Pix por fatura no Asaas Sandbox
+
+- QR Code e Copia e Cola na área de assinatura. A baixa usa o estado consultado na API do Asaas após webhook autenticado ou consulta manual na fatura.
+- O lançamento é transacional e idempotente. A integração requer um Supabase isolado de teste e está desabilitada no site publicado.
+
 ## Pendente
+
+- Homologar o Pix com uma conta Asaas Sandbox e o webhook em uma aplicação de teste acessível ao provedor. Conciliação agendada, estornos no gateway e débito recorrente ficam para etapas posteriores.
 
 - Confirmação dos pontos de `BILLING.md` §23 (seguem as recomendações se não houver objeção).
 - Publicar seguindo `DEPLOY.md` (contas Supabase, GitHub Secrets e Vercel são do usuário).
