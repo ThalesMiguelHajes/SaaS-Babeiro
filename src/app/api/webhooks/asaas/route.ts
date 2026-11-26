@@ -3,7 +3,7 @@ import {
   asaasSandboxConfig,
   confirmAsaasCharge,
   verifyAsaasToken,
-} from "@/modules/billing/providers/asaas";
+} from "@/modules/billing/providers/asaas.server";
 
 export async function POST(request: Request) {
   const config = asaasSandboxConfig();

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireMembership } from "@/lib/authz";
 import { todayInTimeZone } from "@/modules/availability/rules";
 
-import { asaasSandboxConfig, getAsaasPix } from "./providers/asaas";
+import { asaasSandboxConfig, getAsaasPix } from "./providers/asaas.server";
 import { getInvoice } from "./queries";
 import { effectiveInvoiceStatus, isPayable } from "./rules";
 

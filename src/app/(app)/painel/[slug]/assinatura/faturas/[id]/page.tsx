@@ -10,7 +10,7 @@ import { todayInTimeZone } from "@/modules/availability/rules";
 import { AsaasSandboxPix } from "@/modules/billing/components/asaas-sandbox-pix";
 import { InvoiceDocument } from "@/modules/billing/components/invoice-document";
 import { ProofUpload } from "@/modules/billing/components/proof-upload";
-import { asaasSandboxConfig } from "@/modules/billing/providers/asaas";
+import { asaasSandboxConfig } from "@/modules/billing/providers/asaas.server";
 import { getInvoice } from "@/modules/billing/queries";
 import { effectiveInvoiceStatus, isPayable } from "@/modules/billing/rules";
 
